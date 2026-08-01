@@ -5,7 +5,8 @@ const StudentList = ({ students, refreshStudents, onEdit }) => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this student record?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/students/${id}`);
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        await axios.delete(`${API_URL}/api/students/${id}`);
         refreshStudents();
       } catch (error) {
         console.error("Error deleting student:", error);
