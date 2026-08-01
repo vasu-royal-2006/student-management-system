@@ -1,0 +1,11 @@
+{
+  "name": "student-management-system",
+  "version": "1.0.0",
+  "description": "Root package for running both backend and frontend concurrently.",
+  "scripts": {
+    "dev": "concurrently \"node backend/server.js\" \"npm run dev --prefix frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
