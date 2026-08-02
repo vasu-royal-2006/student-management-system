@@ -1,66 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import StudentList from './components/StudentList';
-import StudentForm from './components/StudentForm';
+import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import DashboardLayout from './components/layout/DashboardLayout';
+import DashboardPage from './pages/DashboardPage';
+import PlaceholderPage from './pages/PlaceholderPage';
 
 function App() {
-  const [students, setStudents] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingStudent, setEditingStudent] = useState(null);
-
-  const fetchStudents = async () => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await axios.get(`${API_URL}/api/students`);
-      setStudents(response.data);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const handleAddStudent = () => {
-    setEditingStudent(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditStudent = (student) => {
-    setEditingStudent(student);
-    setIsModalOpen(true);
-  };
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 className="title-gradient" style={{ marginBottom: '0.5rem' }}>Student Management System</h1>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-            Database-driven management application for accurate record retrieval.
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={handleAddStudent}>
-          + Add New Student
-        </button>
-      </div>
-
-      <main className="glass-card">
-        <StudentList 
-          students={students} 
-          refreshStudents={fetchStudents} 
-          onEdit={handleEditStudent} 
-        />
-      </main>
-
-      <StudentForm 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        student={editingStudent}
-        refreshStudents={fetchStudents}
-      />
-    </>
+    <DashboardLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery}>
+      <Routes>
+        <Route path="/" element={<DashboardPage searchQuery={searchQuery} />} />
+        <Route path="/enrollments" element={<PlaceholderPage title="Enrollments" />} />
+        <Route path="/courses" element={<PlaceholderPage title="Courses" />} />
+        <Route path="/students" element={<PlaceholderPage title="Students" />} />
+        <Route path="/trainers" element={<PlaceholderPage title="Trainers" />} />
+        <Route path="/calendar" element={<PlaceholderPage title="Calendar" />} />
+        <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+      </Routes>
+    </DashboardLayout>
   );
 }
 

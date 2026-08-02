@@ -1,30 +1,46 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mysql = require('mysql2/promise');
 
-const dbPath = path.resolve(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database', err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
-    
-    // Create students table if it doesn't exist
-    db.run(`CREATE TABLE IF NOT EXISTS students (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      firstName TEXT NOT NULL,
-      lastName TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      major TEXT NOT NULL,
-      enrollmentDate TEXT,
-      gpa REAL
-    )`, (err) => {
-      if (err) {
-        console.error('Error creating table', err.message);
-      } else {
-        console.log('Students table ready.');
-      }
-    });
-  }
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'student_management',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-module.exports = db;
+async function initDB() {
+  try {
+    // We first connect without the database to create it if it doesn't exist
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || ''
+    });
+
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME || 'student_management'}\`;`);
+    await connection.end();
+
+    // Now use the pool which has the database selected
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS students (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        firstName VARCHAR(255) NOT NULL,
+        lastName VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        major VARCHAR(255) NOT NULL,
+        enrollmentDate VARCHAR(255),
+        gpa DECIMAL(3, 2)
+      )
+    `;
+    await pool.query(createTableQuery);
+    console.log('Connected to MySQL and initialized students table.');
+  } catch (error) {
+    console.error('MySQL database initialization failed:', error.message);
+  }
+}
+
+initDB();
+
+module.exports = pool;
